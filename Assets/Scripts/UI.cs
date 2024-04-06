@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class UI : MonoBehaviour
     [SerializeField] bool inVR = false;
     [SerializeField] float rotateDuration = 2;
     [SerializeField] GameObject[] UIElements;
+    [SerializeField] GameObject[] AudioObjects;
 
     // Start is called before the first frame update
     void Start()
@@ -69,4 +71,24 @@ public class UI : MonoBehaviour
         gameObject.transform.rotation = newRotation;
         rotateCoroutine = null;
     }
+
+    public void MasterMutePressed(Toggle toggle)
+    {
+        foreach(GameObject thisObject in AudioObjects)
+        {
+            AudioSource audioSource = thisObject.GetComponent<AudioSource>();
+            if(audioSource.clip == null)
+            {
+                continue;
+            }
+            if(toggle.isOn)
+            {
+                audioSource.Pause();
+            }
+            else{
+                audioSource.Play();
+            }
+        }
+    }
+
 }
