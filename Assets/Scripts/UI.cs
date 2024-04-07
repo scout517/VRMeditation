@@ -7,10 +7,16 @@ public class UI : MonoBehaviour
 
     private Coroutine rotateCoroutine = null;
 
-    [SerializeField] bool inVR = false;
+    private bool masterMuted = false;
+    [SerializeField] Image masterMuteImage;
+    [SerializeField] Sprite mutedSprite;
+    [SerializeField] Sprite unmutedSprite;
+
     [SerializeField] float rotateDuration = 2;
     [SerializeField] GameObject[] UIElements;
-    [SerializeField] GameObject[] AudioObjects;
+    [SerializeField] AudioSource[] AudioSources;
+
+    private bool uiVisible = true;
 
     // Start is called before the first frame update
     void Start()
@@ -18,6 +24,7 @@ public class UI : MonoBehaviour
         Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
         Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
         gameObject.transform.eulerAngles = newRotation;
+        uiVisible = LayerMask.LayerToName(UIElements[0].layer).Equals("Default");
     }
 
     // Update is called once per frame
@@ -34,22 +41,23 @@ public class UI : MonoBehaviour
             Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
             Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
             gameObject.transform.eulerAngles = newRotation;
+            uiVisible = !uiVisible;
+            string newLayer = uiVisible ? "Default" : "UI";
             foreach (GameObject uiElement in UIElements)
             {
-                Transform transform = uiElement.transform;
-                transform.gameObject.SetActive(!transform.gameObject.activeSelf);
+                
+                uiElement.layer = LayerMask.NameToLayer(newLayer);
             }
         }
     }
 
     private void ShiftUI()
     {
-        if(Input.GetKeyDown(KeyCode.J))
+        if (Input.GetKeyDown(KeyCode.J))
         {
             Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
             Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
-
-            if(rotateCoroutine != null)
+            if (rotateCoroutine != null)
             {
                 StopCoroutine(rotateCoroutine);
             }
@@ -62,7 +70,7 @@ public class UI : MonoBehaviour
         float time = 0;
         Quaternion startValue = transform.rotation;
 
-        while(time < rotateDuration)
+        while (time < rotateDuration)
         {
             gameObject.transform.rotation = Quaternion.Lerp(startValue, newRotation, time / rotateDuration);
             time += Time.deltaTime;
@@ -72,23 +80,40 @@ public class UI : MonoBehaviour
         rotateCoroutine = null;
     }
 
-    public void MasterMutePressed(Toggle toggle)
+    public void MasterMutePressed()
     {
-        foreach(GameObject thisObject in AudioObjects)
+        masterMuted = !masterMuted;
+        foreach (AudioSource audioSource in AudioSources)
         {
-            AudioSource audioSource = thisObject.GetComponent<AudioSource>();
-            if(audioSource.clip == null)
+            if (masterMuted)
             {
-                continue;
+                Debug.Log("Here! Muted");
+                masterMuteImage.sprite = mutedSprite;
+                if (audioSource.clip != null)
+                {
+                    audioSource.Pause();
+                }
             }
-            if(toggle.isOn)
+            else
             {
-                audioSource.Pause();
-            }
-            else{
-                audioSource.Play();
+                Debug.Log("Here! Unmuted");
+                masterMuteImage.sprite = unmutedSprite;
+                if (audioSource.clip != null)
+                {
+                    audioSource.Play();
+                }
             }
         }
+    }
+
+    public void AdjustVolume(AudioSource audioSource, Slider slider)
+    {
+        audioSource.volume = slider.value;
+    }
+
+    public bool GetMasterMuted()
+    {
+        return masterMuted;
     }
 
 }
