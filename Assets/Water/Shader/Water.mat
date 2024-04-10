@@ -58,7 +58,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Depth: -1.54
+    - _Depth: 0
     - _Displacement: 1.5
     - _Normal_Stength: 0.711
     - _QueueControl: 0

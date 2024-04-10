@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class UI : MonoBehaviour
 {
@@ -16,7 +17,22 @@ public class UI : MonoBehaviour
     [SerializeField] GameObject[] UIElements;
     [SerializeField] AudioSource[] AudioSources;
 
+    [SerializeField] InputActionReference toggleUI;
+    [SerializeField] InputActionReference shiftUI;
+
     private bool uiVisible = true;
+
+    void Awake()
+    {
+        toggleUI.action.started += XRControllerToggleUIPressed;
+        shiftUI.action.started += XRControllerShiftUIPressed;
+    }
+    
+    void OnDestroy()
+    {
+        toggleUI.action.started -= XRControllerToggleUIPressed;
+        shiftUI.action.started -= XRControllerShiftUIPressed;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -30,39 +46,54 @@ public class UI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            ToggleUI();
+        }
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            ShiftUI();
+        }
+    }
+
+    private void OnHideUI(InputValue value)
+    {
+        Debug.Log("Working");
+    }
+
+    private void XRControllerToggleUIPressed(InputAction.CallbackContext context)
+    {
         ToggleUI();
-        ShiftUI();
     }
 
     private void ToggleUI()
     {
-        if (Input.GetKeyDown(KeyCode.H))
+        Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
+        Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
+        gameObject.transform.eulerAngles = newRotation;
+        uiVisible = !uiVisible;
+        string newLayer = uiVisible ? "Default" : "UI";
+        foreach (GameObject uiElement in UIElements)
         {
-            Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
-            Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
-            gameObject.transform.eulerAngles = newRotation;
-            uiVisible = !uiVisible;
-            string newLayer = uiVisible ? "Default" : "UI";
-            foreach (GameObject uiElement in UIElements)
-            {
-                
-                uiElement.layer = LayerMask.NameToLayer(newLayer);
-            }
+            
+            uiElement.layer = LayerMask.NameToLayer(newLayer);
         }
+    }
+
+    private void XRControllerShiftUIPressed(InputAction.CallbackContext context)
+    {
+        ShiftUI();
     }
 
     private void ShiftUI()
     {
-        if (Input.GetKeyDown(KeyCode.J))
+        Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
+        Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
+        if (rotateCoroutine != null)
         {
-            Vector3 cameraRotation = Camera.main.transform.rotation.eulerAngles;
-            Vector3 newRotation = new Vector3(0, cameraRotation.y, 0);
-            if (rotateCoroutine != null)
-            {
-                StopCoroutine(rotateCoroutine);
-            }
-            rotateCoroutine = StartCoroutine(RotateUI(Quaternion.Euler(newRotation)));
+            StopCoroutine(rotateCoroutine);
         }
+        rotateCoroutine = StartCoroutine(RotateUI(Quaternion.Euler(newRotation)));
     }
 
     IEnumerator RotateUI(Quaternion newRotation)
