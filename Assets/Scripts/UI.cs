@@ -56,11 +56,6 @@ public class UI : MonoBehaviour
         }
     }
 
-    private void OnHideUI(InputValue value)
-    {
-        Debug.Log("Working");
-    }
-
     private void XRControllerToggleUIPressed(InputAction.CallbackContext context)
     {
         ToggleUI();
@@ -118,7 +113,6 @@ public class UI : MonoBehaviour
         {
             if (masterMuted)
             {
-                Debug.Log("Here! Muted");
                 masterMuteImage.sprite = mutedSprite;
                 if (audioSource.clip != null)
                 {
@@ -127,7 +121,6 @@ public class UI : MonoBehaviour
             }
             else
             {
-                Debug.Log("Here! Unmuted");
                 masterMuteImage.sprite = unmutedSprite;
                 if (audioSource.clip != null)
                 {

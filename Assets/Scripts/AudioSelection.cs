@@ -16,8 +16,9 @@ public class AudioSelection : MonoBehaviour
 
     private List<Button> buttons = new List<Button>(5);
 
-    // Start is called before the first frame update
-    void Start()
+    private Button initialButtonToDisable = null;
+
+    void Awake()
     {
         ui = gameObject.GetComponentInParent<UI>();
         audioSource = audioSource.GetComponent<AudioSource>();
@@ -26,10 +27,63 @@ public class AudioSelection : MonoBehaviour
             Button newButton = Instantiate(audioSelectionButton, gameObject.transform);
             TMP_Text text = newButton.GetComponentInChildren<TMP_Text>();
             text.text = audioClip.name.Replace("-", " ");
+            newButton.transform.name = audioClip.name;
             newButton.GetComponent<ButtonSong>().SetSong(audioClip);
             newButton.onClick.AddListener(() => PlayAudio(audioClip, newButton));
             buttons.Add(newButton);
         }
+    }
+
+    void Start()
+    {
+        if(StaticData.wasOnMenu && transform.name.Equals("Music List"))
+        {
+            PlayInitialMusic();
+        }
+        else if(StaticData.wasOnMenu && transform.name.Equals("Meditation List"))
+        {
+            PlayInitialMeditation();
+        }
+        if(initialButtonToDisable != null)
+            StartCoroutine(DisableInitialButton());
+    }
+
+    IEnumerator DisableInitialButton()
+    {
+        yield return new WaitForSeconds(.1f);
+        initialButtonToDisable.interactable = false;
+    }
+
+    private void PlayInitialMusic()
+    {
+        string songSelection = StaticData.songSelection;
+        if(songSelection.Equals("None"))
+            return;
+
+        InvokeButton(songSelection);
+        StaticData.songSelection = "None";
+    }
+
+    private  void PlayInitialMeditation()
+    {
+        string meditationSelection = StaticData.meditationSelection;
+        if(meditationSelection.Equals("None"))
+            return;
+
+        InvokeButton(meditationSelection);
+        StaticData.meditationSelection = "None";
+    }
+
+    private void InvokeButton(string find)
+    {
+        foreach(Button button in buttons)
+        {
+            if(button.transform.name.Equals(find))
+            {
+                initialButtonToDisable = button;
+                button.onClick.Invoke();
+            }
+        } 
     }
 
     void PlayAudio(AudioClip clip, Button thisButton)
@@ -50,11 +104,5 @@ public class AudioSelection : MonoBehaviour
         {
             button.interactable = true;
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }
