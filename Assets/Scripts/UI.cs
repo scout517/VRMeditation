@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class UI : MonoBehaviour
 {
@@ -128,6 +129,11 @@ public class UI : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void HomeButtonPressed()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void AdjustVolume(AudioSource audioSource, Slider slider)
